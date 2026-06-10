@@ -1,0 +1,39 @@
+DirectoryIndex index.php public/index.php
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:CF-Visitor} !{"scheme":"https"}
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    RewriteBase /
+
+    # Deny direct access to sensitive folders
+    RewriteRule ^(app|config|database|resources|routes|storage)(/|$) - [F,L]
+
+    # Serve browser-visible files from the public folder when htdocs is the document root.
+    RewriteRule ^(assets|img|uploads)/(.*)$ public/$1/$2 [L,NC]
+    RewriteRule ^robots\.txt$ public/robots.txt [L,NC]
+
+    # If request already targets /public/, don't rewrite again
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ public/index.php [L]
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript
+</IfModule>
